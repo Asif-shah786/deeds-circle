@@ -1,0 +1,184 @@
+# Collection: users
+# Stores user profiles and info
+
+Document ID: userId (string)
+
+Fields:
+- displayName: string
+- email: string
+- photoUrl: string (nullable)
+- bio: string (nullable)
+- createdAt: timestamp
+- lastLogin: timestamp
+- totalCompletedVideos: number (int)  # Optional - aggregate from userChallenges
+- totalEarnings: number (double)  # Total earnings across all challenges
+- totalPaid: number (double)      # Total amount paid to user
+- points: number (int) 
+- isAdmin: boolean  # To control admin access
+- preferredLanguage: string  # For localization
+- bankAccountDetails: map {  # Bank details for payments
+    bankName: string,
+    accountNumber: string
+    ifscCode: string
+    accountHolderName: string
+    isVerified: boolean  # Whether admin has verified these details
+}
+
+
+# Collection: challenges
+# Stores challenge meta data and videos as subcollection
+
+Document ID: challengeId (string)
+
+Fields:
+- title: string
+- description: string
+- admins: array<string>  # Array of admin userIds
+- primaryAdminId: string  # Main admin who created the challenge
+- isPublic: boolean
+- thumbnailUrl: string (nullable)
+- createdAt: timestamp
+- updatedAt: timestamp
+- keywords: array<string>  # lowercase searchable keywords
+- rewardAmount: number (double)  # Amount per video
+- totalVideos: number (int)      # Total number of videos in challenge
+- totalPossibleEarning: number (double)  # rewardAmount * totalVideos
+- purpose: string  # I see this being used in challenge_details_screen.dart
+- startDate: timestamp (nullable)  # For time-bound challenges
+- endDate: timestamp (nullable)  # For time-bound challenges
+
+Subcollection: videos
+
+    Document ID: videoId (string)
+
+    Fields:
+    - title: string
+    - description: string (nullable)
+    - videoUrl: string
+    - order: number (int)  # ordering of videos
+    - durationSeconds: number (int)
+
+---
+
+# Collection: userChallenges
+# Top-level collection tracking user participation & progress per challenge
+
+Document ID: userId_challengeId (string)  # composite ID for quick lookup
+
+Fields:
+- userId: string
+- challengeId: string
+- joinedAt: timestamp
+- status: string  # e.g. 'active', 'completed', 'dropped'
+- completedVideoIds: array<string>  # list of videoIds completed by user
+- completedVideoCount: number (int)  # redundant for fast leaderboard sorting
+- challengeTitle: string  # denormalized from challenge for quick display
+- challengeThumbnailUrl: string (nullable)  # denormalized
+- lastUpdated: timestamp
+- earnedAmount: number (double)  # Total amount earned so far
+- paidAmount: number (double)    # Amount already paid to user
+- lastCompletedVideo: map {     # Last video completed
+    videoId: string
+    completedAt: timestamp
+    title: string
+}
+- streakDays: number (int)  # For engagement tracking
+- completedAt: timestamp
+
+
+
+# Collection: leaderboard
+# Document ID: userId
+
+Fields:
+- userId: string
+- name: string
+- points: number (int)
+- rank: number (int)
+- updatedAt: timestamp
+
+# Collection: notifications (optional)
+# To manage reminders and notifications
+
+Document ID: notificationId (string)
+
+Fields:
+- userId: string
+- challengeId: string
+- type: string  # e.g. 'reminder', 'achievement'
+- message: string
+- isRead: boolean
+- createdAt: timestamp
+
+
+Collection: payments
+Document ID: paymentId
+
+Fields:
+- userId: string
+- amount: number (double)
+- status: string  # 'pending', 'processing', 'completed', 'rejected'
+- requestedAt: timestamp  # When user requested payment
+- processedAt: timestamp (nullable)  # When admin started processing
+- completedAt: timestamp (nullable)  # When admin marked as paid
+- bankAccountDetails: map {  # User's bank details
+    accountNumber: string
+    ifscCode: string
+    accountHolderName: string
+}
+- adminNotes: string (nullable)  # For admin to add notes about payment
+- minimumThreshold: number (double)  # Minimum amount required for payment
+- processingTimeDays: number (int)  # Expected processing time in days
+
+# Collection: paymentLogs
+# Tracks all changes and events related to payments
+Document ID: logId (auto-generated)
+
+Fields:
+- paymentId: string  # Reference to the payment
+- userId: string     # Reference to the user
+- action: string     # e.g. 'requested', 'status_changed', 'admin_note_added', 'bank_details_updated'
+- previousStatus: string (nullable)  # Status before change
+- newStatus: string (nullable)      # Status after change
+- amount: number (double)           # Payment amount
+- adminId: string (nullable)        # Admin who made the change
+- notes: string (nullable)          # Additional notes about the action
+- timestamp: timestamp              # When the action occurred
+- metadata: map (nullable)          # Any additional data about the action
+
+Collection: achievements
+Document ID: achievementId
+
+Fields:
+- userId: string
+- type: string  # e.g. 'first_video', 'streak_7_days', 'earned_1000'
+- title: string
+- description: string
+- earnedAt: timestamp
+- points: number (int)
+
+Collection: userSettings
+Document ID: userId
+
+Fields:
+- notificationPreferences: map {
+    email: boolean
+    push: boolean
+    payment: boolean
+}
+- theme: string  # 'light', 'dark', 'system'
+- language: string
+
+# Collection: adminRoles
+# Manages admin permissions for challenges
+Document ID: roleId (auto-generated)
+
+Fields:
+- challengeId: string
+- userId: string
+- role: string  # 'primary', 'editor', 'viewer'
+- permissions: array<string>  # e.g. ['edit_challenge', 'manage_videos', 'view_analytics', 'process_payments']
+- assignedAt: timestamp
+- assignedBy: string  # userId of admin who assigned this role
+- isActive: boolean
+- lastActive: timestamp (nullable)

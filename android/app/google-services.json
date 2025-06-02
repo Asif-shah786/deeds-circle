@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "988771255257",
+    "project_id": "deeds-circle",
+    "storage_bucket": "deeds-circle.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:988771255257:android:be9df3625a8c4931d64fc8",
+        "android_client_info": {
+          "package_name": "com.example.deeds_circle"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyANPVR400f6qOVE66F9CYPziit7WDuL4HA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

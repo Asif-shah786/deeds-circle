@@ -1,0 +1,55 @@
+{
+    "challenge": {
+        "id": "SC_QURAN_INTRO_001",
+        "title": "Introduction to Understanding the Quran",
+        "description": "A concise introduction to understanding the Quran, featuring three essential lectures by Dr. Israr Ahmed. This short series covers the fundamental concepts and importance of studying the Quran, perfect for beginners.",
+        "admins": [],
+        "primaryAdminId": "",
+        "isPublic": true,
+        "thumbnailUrl": "https://i.ytimg.com/vi/j7-pVr2G-6w/hqdefault.jpg",
+        "createdAt": "2024-03-10T11:50:17.910972",
+        "updatedAt": "2024-03-10T11:50:17.910972",
+        "keywords": [
+            "Quran",
+            "Introduction",
+            "Beginners",
+            "Islamic Studies",
+            "Quranic Basics"
+        ],
+        "rewardAmount": 140.0,
+        "totalVideos": 3,
+        "totalPossibleEarning": 420.0,
+        "purpose": "To provide a quick and essential introduction to understanding the Quran for beginners",
+        "startDate": "2024-03-10T00:00:00.000Z",
+        "endDate": "2024-06-30T23:59:59.999Z"
+    },
+    "videos": [
+        {
+            "id": "j7-pVr2G-6w",
+            "title": "Introduction to Quran Tafseer Series",
+            "description": "An essential introduction to understanding the Quran, covering the importance and methodology of studying the Quran",
+            "videoUrl": "https://www.youtube.com/watch?v=j7-pVr2G-6w",
+            "order": 1,
+            "durationSeconds": 3680,
+            "challengeId": "SC_QURAN_INTRO_001"
+        },
+        {
+            "id": "ALb_HvSPiJM",
+            "title": "Understanding the Quran - Basic Concepts",
+            "description": "Learn the fundamental concepts and principles of understanding the Quran",
+            "videoUrl": "https://www.youtube.com/watch?v=ALb_HvSPiJM",
+            "order": 2,
+            "durationSeconds": 3494,
+            "challengeId": "SC_QURAN_INTRO_001"
+        },
+        {
+            "id": "o6JSgXBR1-E",
+            "title": "The Importance of Quranic Knowledge",
+            "description": "Understanding why learning the Quran is essential for every Muslim",
+            "videoUrl": "https://www.youtube.com/watch?v=o6JSgXBR1-E",
+            "order": 3,
+            "durationSeconds": 3558,
+            "challengeId": "SC_QURAN_INTRO_001"
+        }
+    ]
+}
