@@ -35,6 +35,7 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
   bool _isInitialized = false;
   bool _isCompleted = false;
   bool _hasReachedThreshold = false;
+  bool _showCompletionStatus = false;
   static const int _requiredWatchSeconds = 10; // Must watch 10 seconds
 
   @override
@@ -222,6 +223,7 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
       if (mounted) {
         setState(() {
           _isCompleted = true;
+          _showCompletionStatus = true;
         });
 
         // Show Duolingo-style toast
@@ -234,6 +236,15 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
             backgroundColor: AppTheme.primaryGreen,
           );
         }
+
+        // Hide completion status after 3 seconds
+        Future.delayed(const Duration(seconds: 3), () {
+          if (mounted) {
+            setState(() {
+              _showCompletionStatus = false;
+            });
+          }
+        });
       }
     } catch (e) {
       if (mounted) {
@@ -339,7 +350,7 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
                   ),
                 ),
                 // Completion Status
-                if (_isCompleted)
+                if (_showCompletionStatus)
                   Positioned(
                     top: 8,
                     left: 0,
@@ -381,21 +392,9 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
             ),
           ),
           error: (error, stack) => Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.error_outline,
-                  size: 48,
-                  color: AppTheme.errorRed,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  error.toString(),
-                  style: const TextStyle(color: AppTheme.errorRed),
-                  textAlign: TextAlign.center,
-                ),
-              ],
+            child: Text(
+              'Error: $error',
+              style: const TextStyle(color: Colors.white),
             ),
           ),
         ),

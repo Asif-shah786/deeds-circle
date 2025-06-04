@@ -1,4 +1,4 @@
-package com.example.deeds_circle
+package deeds_circle.challenges.app.mobile
 
 import io.flutter.embedding.android.FlutterActivity
 

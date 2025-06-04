@@ -42,6 +42,12 @@ class ChallengesNotifier extends StateNotifier<ChallengesState> {
   ChallengesNotifier(this._challengeRepo, this._userChallengeRepo, this._ref) : super(ChallengesState());
 
   Future<void> loadChallenges() async {
+    // Don't reload if we're already loading
+    if (state.isLoading) return;
+
+    // Don't reload if we already have data
+    if (state.challenges.isNotEmpty && state.userChallenges.isNotEmpty) return;
+
     state = state.copyWith(isLoading: true, error: null);
 
     try {
@@ -95,7 +101,7 @@ class ChallengesNotifier extends StateNotifier<ChallengesState> {
           challengeId: updatedUserChallenge,
         },
       );
-      await loadChallenges();
+      // No need to reload all challenges after joining
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }
@@ -115,6 +121,12 @@ class ChallengesNotifier extends StateNotifier<ChallengesState> {
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }
+  }
+
+  // Add method to force refresh when needed
+  Future<void> forceRefresh() async {
+    state = state.copyWith(challenges: [], userChallenges: {});
+    await loadChallenges();
   }
 }
 

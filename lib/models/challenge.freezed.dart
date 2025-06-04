@@ -27,14 +27,18 @@ mixin _$Challenge {
   String get primaryAdminId => throw _privateConstructorUsedError;
   bool get isPublic => throw _privateConstructorUsedError;
   String? get thumbnailUrl => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   DateTime get createdAt => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   DateTime get updatedAt => throw _privateConstructorUsedError;
   List<String> get keywords => throw _privateConstructorUsedError;
   double get rewardAmount => throw _privateConstructorUsedError;
   int get totalVideos => throw _privateConstructorUsedError;
   double get totalPossibleEarning => throw _privateConstructorUsedError;
   String get purpose => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   DateTime? get startDate => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   DateTime? get endDate => throw _privateConstructorUsedError;
 
   /// Serializes this Challenge to a JSON map.
@@ -60,14 +64,18 @@ abstract class $ChallengeCopyWith<$Res> {
       String primaryAdminId,
       bool isPublic,
       String? thumbnailUrl,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       DateTime createdAt,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       DateTime updatedAt,
       List<String> keywords,
       double rewardAmount,
       int totalVideos,
       double totalPossibleEarning,
       String purpose,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       DateTime? startDate,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       DateTime? endDate});
 }
 
@@ -188,14 +196,18 @@ abstract class _$$ChallengeImplCopyWith<$Res>
       String primaryAdminId,
       bool isPublic,
       String? thumbnailUrl,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       DateTime createdAt,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       DateTime updatedAt,
       List<String> keywords,
       double rewardAmount,
       int totalVideos,
       double totalPossibleEarning,
       String purpose,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       DateTime? startDate,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       DateTime? endDate});
 }
 
@@ -309,14 +321,18 @@ class _$ChallengeImpl implements _Challenge {
       required this.primaryAdminId,
       required this.isPublic,
       this.thumbnailUrl,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       required this.createdAt,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       required this.updatedAt,
       required final List<String> keywords,
       required this.rewardAmount,
       required this.totalVideos,
       required this.totalPossibleEarning,
       required this.purpose,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       this.startDate,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       this.endDate})
       : _admins = admins,
         _keywords = keywords;
@@ -345,8 +361,10 @@ class _$ChallengeImpl implements _Challenge {
   @override
   final String? thumbnailUrl;
   @override
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   final DateTime createdAt;
   @override
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   final DateTime updatedAt;
   final List<String> _keywords;
   @override
@@ -365,8 +383,10 @@ class _$ChallengeImpl implements _Challenge {
   @override
   final String purpose;
   @override
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   final DateTime? startDate;
   @override
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   final DateTime? endDate;
 
   @override
@@ -453,14 +473,18 @@ abstract class _Challenge implements Challenge {
       required final String primaryAdminId,
       required final bool isPublic,
       final String? thumbnailUrl,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       required final DateTime createdAt,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       required final DateTime updatedAt,
       required final List<String> keywords,
       required final double rewardAmount,
       required final int totalVideos,
       required final double totalPossibleEarning,
       required final String purpose,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       final DateTime? startDate,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       final DateTime? endDate}) = _$ChallengeImpl;
 
   factory _Challenge.fromJson(Map<String, dynamic> json) =
@@ -481,8 +505,10 @@ abstract class _Challenge implements Challenge {
   @override
   String? get thumbnailUrl;
   @override
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   DateTime get createdAt;
   @override
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   DateTime get updatedAt;
   @override
   List<String> get keywords;
@@ -495,8 +521,10 @@ abstract class _Challenge implements Challenge {
   @override
   String get purpose;
   @override
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   DateTime? get startDate;
   @override
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   DateTime? get endDate;
 
   /// Create a copy of Challenge

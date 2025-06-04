@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:988771255257:android:be9df3625a8c4931d64fc8",
         "android_client_info": {
-          "package_name": "com.example.deeds_circle"
+          "package_name": "deeds_circle.challenges.app.mobile"
         }
       },
       "oauth_client": [],

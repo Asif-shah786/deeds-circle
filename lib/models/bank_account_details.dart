@@ -7,9 +7,8 @@ part 'bank_account_details.g.dart';
 class BankAccountDetails with _$BankAccountDetails {
   const factory BankAccountDetails({
     required String bankName,
-    required String accountNumber,
-    required String ifscCode,
     required String accountHolderName,
+    required String accountNumber,
     required bool isVerified,
   }) = _BankAccountDetails;
 

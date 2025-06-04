@@ -12,14 +12,26 @@ class AuthRepository {
   })  : _auth = auth ?? FirebaseAuth.instance,
         _firestore = firestore ?? FirebaseFirestore.instance;
 
+  // Add getter for firestore
+  FirebaseFirestore get firestore => _firestore;
+
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
   Future<UserCredential> signInWithEmailAndPassword(String email, String password) async {
     try {
-      return await _auth.signInWithEmailAndPassword(
+      final userCredential = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
+
+      // Update last login
+      if (userCredential.user != null) {
+        await _firestore.collection('users').doc(userCredential.user!.uid).update({
+          'lastLogin': FieldValue.serverTimestamp(),
+        });
+      }
+
+      return userCredential;
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     }
@@ -86,7 +98,7 @@ class AuthRepository {
       preferredLanguage: 'en',
     );
 
-    await _firestore.collection('users').doc(uid).set(user.toJson());
+    await _firestore.collection('users').doc(uid).set(user.toFirestore());
   }
 
   Exception _handleAuthException(FirebaseAuthException e) {

@@ -27,6 +27,7 @@ mixin _$UserSettings {
   String get preferredLanguage => throw _privateConstructorUsedError;
   String get theme => throw _privateConstructorUsedError;
   Map<String, dynamic> get preferences => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   DateTime get lastUpdated => throw _privateConstructorUsedError;
 
   /// Serializes this UserSettings to a JSON map.
@@ -53,6 +54,7 @@ abstract class $UserSettingsCopyWith<$Res> {
       String preferredLanguage,
       String theme,
       Map<String, dynamic> preferences,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       DateTime lastUpdated});
 }
 
@@ -133,6 +135,7 @@ abstract class _$$UserSettingsImplCopyWith<$Res>
       String preferredLanguage,
       String theme,
       Map<String, dynamic> preferences,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       DateTime lastUpdated});
 }
 
@@ -206,6 +209,7 @@ class _$UserSettingsImpl implements _UserSettings {
       required this.preferredLanguage,
       required this.theme,
       required final Map<String, dynamic> preferences,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       required this.lastUpdated})
       : _preferences = preferences;
 
@@ -233,6 +237,7 @@ class _$UserSettingsImpl implements _UserSettings {
   }
 
   @override
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   final DateTime lastUpdated;
 
   @override
@@ -299,6 +304,7 @@ abstract class _UserSettings implements UserSettings {
       required final String preferredLanguage,
       required final String theme,
       required final Map<String, dynamic> preferences,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       required final DateTime lastUpdated}) = _$UserSettingsImpl;
 
   factory _UserSettings.fromJson(Map<String, dynamic> json) =
@@ -319,6 +325,7 @@ abstract class _UserSettings implements UserSettings {
   @override
   Map<String, dynamic> get preferences;
   @override
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   DateTime get lastUpdated;
 
   /// Create a copy of UserSettings

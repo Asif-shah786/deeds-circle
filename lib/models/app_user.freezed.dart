@@ -25,7 +25,9 @@ mixin _$AppUser {
   String get email => throw _privateConstructorUsedError;
   String? get photoUrl => throw _privateConstructorUsedError;
   String? get bio => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   DateTime get createdAt => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   DateTime get lastLogin => throw _privateConstructorUsedError;
   int get totalCompletedVideos => throw _privateConstructorUsedError;
   double get totalEarnings => throw _privateConstructorUsedError;
@@ -56,7 +58,9 @@ abstract class $AppUserCopyWith<$Res> {
       String email,
       String? photoUrl,
       String? bio,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       DateTime createdAt,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       DateTime lastLogin,
       int totalCompletedVideos,
       double totalEarnings,
@@ -188,7 +192,9 @@ abstract class _$$AppUserImplCopyWith<$Res> implements $AppUserCopyWith<$Res> {
       String email,
       String? photoUrl,
       String? bio,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       DateTime createdAt,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       DateTime lastLogin,
       int totalCompletedVideos,
       double totalEarnings,
@@ -300,7 +306,9 @@ class _$AppUserImpl implements _AppUser {
       required this.email,
       this.photoUrl,
       this.bio,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       required this.createdAt,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       required this.lastLogin,
       required this.totalCompletedVideos,
       required this.totalEarnings,
@@ -324,8 +332,10 @@ class _$AppUserImpl implements _AppUser {
   @override
   final String? bio;
   @override
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   final DateTime createdAt;
   @override
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   final DateTime lastLogin;
   @override
   final int totalCompletedVideos;
@@ -419,7 +429,9 @@ abstract class _AppUser implements AppUser {
       required final String email,
       final String? photoUrl,
       final String? bio,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       required final DateTime createdAt,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       required final DateTime lastLogin,
       required final int totalCompletedVideos,
       required final double totalEarnings,
@@ -442,8 +454,10 @@ abstract class _AppUser implements AppUser {
   @override
   String? get bio;
   @override
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   DateTime get createdAt;
   @override
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   DateTime get lastLogin;
   @override
   int get totalCompletedVideos;

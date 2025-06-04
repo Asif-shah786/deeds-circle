@@ -13,8 +13,8 @@ class AppUser with _$AppUser {
     required String email,
     String? photoUrl,
     String? bio,
-    required DateTime createdAt,
-    required DateTime lastLogin,
+    @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson) required DateTime createdAt,
+    @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson) required DateTime lastLogin,
     required int totalCompletedVideos,
     required double totalEarnings,
     required double totalPaid,
@@ -31,8 +31,33 @@ class AppUser with _$AppUser {
     return AppUser.fromJson({
       'id': doc.id,
       ...data,
-      'createdAt': (data['createdAt'] as Timestamp).toDate().toIso8601String(),
-      'lastLogin': (data['lastLogin'] as Timestamp).toDate().toIso8601String(),
     });
   }
+}
+
+extension AppUserFirestore on AppUser {
+  Map<String, dynamic> toFirestore() {
+    final json = toJson();
+    return {
+      ...json,
+      'createdAt': Timestamp.fromDate(createdAt),
+      'lastLogin': Timestamp.fromDate(lastLogin),
+    };
+  }
+}
+
+// Helper functions for DateTime/Timestamp conversion
+DateTime _timestampFromJson(dynamic timestamp) {
+  if (timestamp is Timestamp) {
+    return timestamp.toDate();
+  } else if (timestamp is String) {
+    return DateTime.parse(timestamp);
+  } else if (timestamp is int) {
+    return DateTime.fromMillisecondsSinceEpoch(timestamp);
+  }
+  throw ArgumentError('Invalid timestamp format');
+}
+
+dynamic _timestampToJson(DateTime dateTime) {
+  return Timestamp.fromDate(dateTime);
 }

@@ -15,7 +15,7 @@ _$UserSettingsImpl _$$UserSettingsImplFromJson(Map<String, dynamic> json) =>
       preferredLanguage: json['preferredLanguage'] as String,
       theme: json['theme'] as String,
       preferences: json['preferences'] as Map<String, dynamic>,
-      lastUpdated: DateTime.parse(json['lastUpdated'] as String),
+      lastUpdated: _timestampFromJson(json['lastUpdated']),
     );
 
 Map<String, dynamic> _$$UserSettingsImplToJson(_$UserSettingsImpl instance) =>
@@ -27,5 +27,5 @@ Map<String, dynamic> _$$UserSettingsImplToJson(_$UserSettingsImpl instance) =>
       'preferredLanguage': instance.preferredLanguage,
       'theme': instance.theme,
       'preferences': instance.preferences,
-      'lastUpdated': instance.lastUpdated.toIso8601String(),
+      'lastUpdated': _timestampToJson(instance.lastUpdated),
     };

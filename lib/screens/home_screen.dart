@@ -12,15 +12,43 @@ import '../widgets/duolingo_toast.dart';
 import 'package:intl/intl.dart';
 import '../utils/currency_formatter.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Remove the automatic loading of challenges
+    // Future.microtask(() {
+    //   ref.read(challengesProvider.notifier).loadChallenges();
+    // });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final challengesState = ref.watch(challengesProvider);
     final videoRepo = ref.watch(videoRepositoryProvider);
 
-    // Remove loading check since data is already loaded in splash screen
+    // If we have no challenges data yet, load it once
+    if (!challengesState.isLoading && challengesState.challenges.isEmpty && challengesState.error == null) {
+      Future.microtask(() {
+        ref.read(challengesProvider.notifier).loadChallenges();
+      });
+    }
+
+    if (challengesState.isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     if (challengesState.error != null) {
       return Scaffold(
         body: Center(

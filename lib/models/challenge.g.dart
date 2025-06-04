@@ -16,20 +16,16 @@ _$ChallengeImpl _$$ChallengeImplFromJson(Map<String, dynamic> json) =>
       primaryAdminId: json['primaryAdminId'] as String,
       isPublic: json['isPublic'] as bool,
       thumbnailUrl: json['thumbnailUrl'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      createdAt: _timestampFromJson(json['createdAt']),
+      updatedAt: _timestampFromJson(json['updatedAt']),
       keywords:
           (json['keywords'] as List<dynamic>).map((e) => e as String).toList(),
       rewardAmount: (json['rewardAmount'] as num).toDouble(),
       totalVideos: (json['totalVideos'] as num).toInt(),
       totalPossibleEarning: (json['totalPossibleEarning'] as num).toDouble(),
       purpose: json['purpose'] as String,
-      startDate: json['startDate'] == null
-          ? null
-          : DateTime.parse(json['startDate'] as String),
-      endDate: json['endDate'] == null
-          ? null
-          : DateTime.parse(json['endDate'] as String),
+      startDate: _timestampFromJson(json['startDate']),
+      endDate: _timestampFromJson(json['endDate']),
     );
 
 Map<String, dynamic> _$$ChallengeImplToJson(_$ChallengeImpl instance) =>
@@ -41,13 +37,13 @@ Map<String, dynamic> _$$ChallengeImplToJson(_$ChallengeImpl instance) =>
       'primaryAdminId': instance.primaryAdminId,
       'isPublic': instance.isPublic,
       'thumbnailUrl': instance.thumbnailUrl,
-      'createdAt': instance.createdAt.toIso8601String(),
-      'updatedAt': instance.updatedAt.toIso8601String(),
+      'createdAt': _timestampToJson(instance.createdAt),
+      'updatedAt': _timestampToJson(instance.updatedAt),
       'keywords': instance.keywords,
       'rewardAmount': instance.rewardAmount,
       'totalVideos': instance.totalVideos,
       'totalPossibleEarning': instance.totalPossibleEarning,
       'purpose': instance.purpose,
-      'startDate': instance.startDate?.toIso8601String(),
-      'endDate': instance.endDate?.toIso8601String(),
+      'startDate': _timestampToJson(instance.startDate),
+      'endDate': _timestampToJson(instance.endDate),
     };

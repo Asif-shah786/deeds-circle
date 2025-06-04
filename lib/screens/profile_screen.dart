@@ -22,8 +22,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _bankNameController = TextEditingController();
   final _accountHolderNameController = TextEditingController();
   final _accountNumberController = TextEditingController();
-  final _ifscCodeController = TextEditingController();
   String? _appVersion;
+  bool _isEditingBankDetails = false;
+  bool _isSavingBankDetails = false;
+  String? _bankDetailsError;
 
   @override
   void initState() {
@@ -43,161 +45,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     _bankNameController.dispose();
     _accountHolderNameController.dispose();
     _accountNumberController.dispose();
-    _ifscCodeController.dispose();
     super.dispose();
-  }
-
-  Future<void> _updateBankDetails(BankAccountDetails? currentDetails) async {
-    if (currentDetails != null) {
-      _bankNameController.text = currentDetails.bankName;
-      _accountHolderNameController.text = currentDetails.accountHolderName;
-      _accountNumberController.text = currentDetails.accountNumber;
-      _ifscCodeController.text = currentDetails.ifscCode;
-    } else {
-      _bankNameController.clear();
-      _accountHolderNameController.clear();
-      _accountNumberController.clear();
-      _ifscCodeController.clear();
-    }
-
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(currentDetails != null ? 'Update Bank Details' : 'Add Bank Details'),
-          content: Form(
-            key: _formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextFormField(
-                    controller: _bankNameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Bank Name',
-                      hintText: 'Enter your bank name',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter bank name';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _accountHolderNameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Account Holder Name',
-                      hintText: 'Enter account holder name',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter account holder name';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _accountNumberController,
-                    decoration: const InputDecoration(
-                      labelText: 'Account Number',
-                      hintText: 'Enter account number',
-                    ),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter account number';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _ifscCodeController,
-                    decoration: const InputDecoration(
-                      labelText: 'IFSC Code',
-                      hintText: 'Enter IFSC code',
-                    ),
-                    textCapitalization: TextCapitalization.characters,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter IFSC code';
-                      }
-                      return null;
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () async {
-                if (_formKey.currentState!.validate()) {
-                  final user = ref.read(authStateProvider).value;
-                  if (user != null) {
-                    final bankDetails = BankAccountDetails(
-                      bankName: _bankNameController.text,
-                      accountHolderName: _accountHolderNameController.text,
-                      accountNumber: _accountNumberController.text,
-                      ifscCode: _ifscCodeController.text,
-                      isVerified: false,
-                    );
-
-                    await FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(user.uid)
-                        .update({'bankAccountDetails': bankDetails.toJson()});
-
-                    if (context.mounted) {
-                      Navigator.of(context).pop();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Bank details updated successfully')),
-                      );
-                    }
-                  }
-                }
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _showLogoutConfirmation(BuildContext context) async {
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Logout'),
-          content: const Text('Are you sure you want to logout?'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                await ref.read(authRepositoryProvider).signOut();
-                if (context.mounted) {
-                  context.go('/login');
-                }
-              },
-              child: const Text('Logout'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
@@ -346,14 +194,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        _buildSettingsCard(
-                          'Bank Account',
-                          appUser.bankAccountDetails != null
-                              ? '${appUser.bankAccountDetails!.bankName} - ${appUser.bankAccountDetails!.accountNumber}'
-                              : 'Not Connected',
-                          Icons.account_balance,
-                          onTap: () => _updateBankDetails(appUser.bankAccountDetails),
-                        ),
+                        _buildBankDetailsCard(appUser),
                         const SizedBox(height: 12),
                         _buildSettingsCard(
                           'Language',
@@ -515,6 +356,249 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
+  Widget _buildBankDetailsCard(AppUser appUser) {
+    final details = appUser.bankAccountDetails;
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: AppTheme.primaryGreen.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.account_balance, color: AppTheme.primaryGreen),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Bank Account',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: AppTheme.textDark,
+                      ),
+                    ),
+                  ],
+                ),
+                IconButton(
+                  icon: Icon(_isEditingBankDetails ? Icons.close : Icons.edit, color: AppTheme.primaryGreen),
+                  onPressed: () {
+                    setState(() {
+                      _bankDetailsError = null;
+                      _isEditingBankDetails = !_isEditingBankDetails;
+                      if (_isEditingBankDetails && details != null) {
+                        _bankNameController.text = details.bankName;
+                        _accountHolderNameController.text = details.accountHolderName;
+                        _accountNumberController.text = details.accountNumber;
+                      } else if (_isEditingBankDetails) {
+                        _bankNameController.clear();
+                        _accountHolderNameController.clear();
+                        _accountNumberController.clear();
+                      }
+                    });
+                  },
+                ),
+              ],
+            ),
+            if (!_isEditingBankDetails)
+              details != null
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 8),
+                        _bankDetailRow('Bank Name', details.bankName),
+                        _bankDetailRow('Account Holder', details.accountHolderName),
+                        _bankDetailRow('Account Number', details.accountNumber),
+                        if (details.isVerified)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Row(
+                              children: [
+                                Icon(Icons.verified, color: Colors.green, size: 18),
+                                const SizedBox(width: 4),
+                                Text('Verified',
+                                    style: TextStyle(color: Colors.green[700], fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ),
+                      ],
+                    )
+                  : Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Text('Not Connected', style: TextStyle(color: Colors.grey[600], fontSize: 14)),
+                    ),
+            if (_isEditingBankDetails)
+              Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _bankNameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Bank Name',
+                        hintText: 'Enter your bank name',
+                        prefixIcon: Icon(Icons.account_balance),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter bank name';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _accountHolderNameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Account Holder Name',
+                        hintText: 'Enter account holder name',
+                        prefixIcon: Icon(Icons.person),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter account holder name';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _accountNumberController,
+                      decoration: const InputDecoration(
+                        labelText: 'Account Number',
+                        hintText: 'Enter account number',
+                        prefixIcon: Icon(Icons.numbers),
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter account number';
+                        }
+                        return null;
+                      },
+                    ),
+                    if (_bankDetailsError != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(_bankDetailsError!, style: const TextStyle(color: Colors.red)),
+                      ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: _isSavingBankDetails
+                                ? null
+                                : () async {
+                                    if (_formKey.currentState!.validate()) {
+                                      setState(() {
+                                        _isSavingBankDetails = true;
+                                        _bankDetailsError = null;
+                                      });
+                                      try {
+                                        final user = ref.read(authStateProvider).value;
+                                        if (user != null) {
+                                          final bankDetails = BankAccountDetails(
+                                            bankName: _bankNameController.text,
+                                            accountHolderName: _accountHolderNameController.text,
+                                            accountNumber: _accountNumberController.text,
+                                            isVerified: false,
+                                          );
+                                          await FirebaseFirestore.instance
+                                              .collection('users')
+                                              .doc(user.uid)
+                                              .update({'bankAccountDetails': bankDetails.toJson()});
+                                          ref.invalidate(currentUserProvider);
+                                          setState(() {
+                                            _isEditingBankDetails = false;
+                                          });
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(content: Text('Bank details updated successfully')),
+                                            );
+                                          }
+                                        }
+                                      } catch (e) {
+                                        setState(() {
+                                          _bankDetailsError = 'Failed to update bank details.';
+                                        });
+                                      } finally {
+                                        setState(() {
+                                          _isSavingBankDetails = false;
+                                        });
+                                      }
+                                    }
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primaryGreen,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: _isSavingBankDetails
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    ),
+                                  )
+                                : const Text('Save'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: _isSavingBankDetails
+                                ? null
+                                : () {
+                                    setState(() {
+                                      _isEditingBankDetails = false;
+                                      _bankDetailsError = null;
+                                    });
+                                  },
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(color: AppTheme.primaryGreen),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text('Cancel'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _bankDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2.0),
+      child: Row(
+        children: [
+          Text('$label: ', style: TextStyle(color: Colors.grey[700], fontWeight: FontWeight.w500)),
+          Expanded(child: Text(value, style: const TextStyle(color: AppTheme.textDark))),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSettingsCard(String title, String subtitle, IconData icon, {VoidCallback? onTap}) {
     return Card(
       elevation: 0,
@@ -556,6 +640,34 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
         onTap: onTap,
       ),
+    );
+  }
+
+  Future<void> _showLogoutConfirmation(BuildContext context) async {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Logout'),
+          content: const Text('Are you sure you want to logout?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await ref.read(authRepositoryProvider).signOut();
+                if (context.mounted) {
+                  context.go('/login');
+                }
+              },
+              child: const Text('Logout'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

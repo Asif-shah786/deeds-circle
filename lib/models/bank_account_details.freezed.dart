@@ -21,9 +21,8 @@ BankAccountDetails _$BankAccountDetailsFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$BankAccountDetails {
   String get bankName => throw _privateConstructorUsedError;
-  String get accountNumber => throw _privateConstructorUsedError;
-  String get ifscCode => throw _privateConstructorUsedError;
   String get accountHolderName => throw _privateConstructorUsedError;
+  String get accountNumber => throw _privateConstructorUsedError;
   bool get isVerified => throw _privateConstructorUsedError;
 
   /// Serializes this BankAccountDetails to a JSON map.
@@ -44,9 +43,8 @@ abstract class $BankAccountDetailsCopyWith<$Res> {
   @useResult
   $Res call(
       {String bankName,
-      String accountNumber,
-      String ifscCode,
       String accountHolderName,
+      String accountNumber,
       bool isVerified});
 }
 
@@ -66,9 +64,8 @@ class _$BankAccountDetailsCopyWithImpl<$Res, $Val extends BankAccountDetails>
   @override
   $Res call({
     Object? bankName = null,
-    Object? accountNumber = null,
-    Object? ifscCode = null,
     Object? accountHolderName = null,
+    Object? accountNumber = null,
     Object? isVerified = null,
   }) {
     return _then(_value.copyWith(
@@ -76,17 +73,13 @@ class _$BankAccountDetailsCopyWithImpl<$Res, $Val extends BankAccountDetails>
           ? _value.bankName
           : bankName // ignore: cast_nullable_to_non_nullable
               as String,
-      accountNumber: null == accountNumber
-          ? _value.accountNumber
-          : accountNumber // ignore: cast_nullable_to_non_nullable
-              as String,
-      ifscCode: null == ifscCode
-          ? _value.ifscCode
-          : ifscCode // ignore: cast_nullable_to_non_nullable
-              as String,
       accountHolderName: null == accountHolderName
           ? _value.accountHolderName
           : accountHolderName // ignore: cast_nullable_to_non_nullable
+              as String,
+      accountNumber: null == accountNumber
+          ? _value.accountNumber
+          : accountNumber // ignore: cast_nullable_to_non_nullable
               as String,
       isVerified: null == isVerified
           ? _value.isVerified
@@ -106,9 +99,8 @@ abstract class _$$BankAccountDetailsImplCopyWith<$Res>
   @useResult
   $Res call(
       {String bankName,
-      String accountNumber,
-      String ifscCode,
       String accountHolderName,
+      String accountNumber,
       bool isVerified});
 }
 
@@ -126,9 +118,8 @@ class __$$BankAccountDetailsImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? bankName = null,
-    Object? accountNumber = null,
-    Object? ifscCode = null,
     Object? accountHolderName = null,
+    Object? accountNumber = null,
     Object? isVerified = null,
   }) {
     return _then(_$BankAccountDetailsImpl(
@@ -136,17 +127,13 @@ class __$$BankAccountDetailsImplCopyWithImpl<$Res>
           ? _value.bankName
           : bankName // ignore: cast_nullable_to_non_nullable
               as String,
-      accountNumber: null == accountNumber
-          ? _value.accountNumber
-          : accountNumber // ignore: cast_nullable_to_non_nullable
-              as String,
-      ifscCode: null == ifscCode
-          ? _value.ifscCode
-          : ifscCode // ignore: cast_nullable_to_non_nullable
-              as String,
       accountHolderName: null == accountHolderName
           ? _value.accountHolderName
           : accountHolderName // ignore: cast_nullable_to_non_nullable
+              as String,
+      accountNumber: null == accountNumber
+          ? _value.accountNumber
+          : accountNumber // ignore: cast_nullable_to_non_nullable
               as String,
       isVerified: null == isVerified
           ? _value.isVerified
@@ -161,9 +148,8 @@ class __$$BankAccountDetailsImplCopyWithImpl<$Res>
 class _$BankAccountDetailsImpl implements _BankAccountDetails {
   const _$BankAccountDetailsImpl(
       {required this.bankName,
-      required this.accountNumber,
-      required this.ifscCode,
       required this.accountHolderName,
+      required this.accountNumber,
       required this.isVerified});
 
   factory _$BankAccountDetailsImpl.fromJson(Map<String, dynamic> json) =>
@@ -172,17 +158,15 @@ class _$BankAccountDetailsImpl implements _BankAccountDetails {
   @override
   final String bankName;
   @override
-  final String accountNumber;
-  @override
-  final String ifscCode;
-  @override
   final String accountHolderName;
+  @override
+  final String accountNumber;
   @override
   final bool isVerified;
 
   @override
   String toString() {
-    return 'BankAccountDetails(bankName: $bankName, accountNumber: $accountNumber, ifscCode: $ifscCode, accountHolderName: $accountHolderName, isVerified: $isVerified)';
+    return 'BankAccountDetails(bankName: $bankName, accountHolderName: $accountHolderName, accountNumber: $accountNumber, isVerified: $isVerified)';
   }
 
   @override
@@ -192,20 +176,18 @@ class _$BankAccountDetailsImpl implements _BankAccountDetails {
             other is _$BankAccountDetailsImpl &&
             (identical(other.bankName, bankName) ||
                 other.bankName == bankName) &&
-            (identical(other.accountNumber, accountNumber) ||
-                other.accountNumber == accountNumber) &&
-            (identical(other.ifscCode, ifscCode) ||
-                other.ifscCode == ifscCode) &&
             (identical(other.accountHolderName, accountHolderName) ||
                 other.accountHolderName == accountHolderName) &&
+            (identical(other.accountNumber, accountNumber) ||
+                other.accountNumber == accountNumber) &&
             (identical(other.isVerified, isVerified) ||
                 other.isVerified == isVerified));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, bankName, accountNumber,
-      ifscCode, accountHolderName, isVerified);
+  int get hashCode => Object.hash(
+      runtimeType, bankName, accountHolderName, accountNumber, isVerified);
 
   /// Create a copy of BankAccountDetails
   /// with the given fields replaced by the non-null parameter values.
@@ -227,9 +209,8 @@ class _$BankAccountDetailsImpl implements _BankAccountDetails {
 abstract class _BankAccountDetails implements BankAccountDetails {
   const factory _BankAccountDetails(
       {required final String bankName,
-      required final String accountNumber,
-      required final String ifscCode,
       required final String accountHolderName,
+      required final String accountNumber,
       required final bool isVerified}) = _$BankAccountDetailsImpl;
 
   factory _BankAccountDetails.fromJson(Map<String, dynamic> json) =
@@ -238,11 +219,9 @@ abstract class _BankAccountDetails implements BankAccountDetails {
   @override
   String get bankName;
   @override
-  String get accountNumber;
-  @override
-  String get ifscCode;
-  @override
   String get accountHolderName;
+  @override
+  String get accountNumber;
   @override
   bool get isVerified;
 

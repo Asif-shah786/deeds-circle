@@ -70,16 +70,6 @@ class AuthTextField extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: AppTheme.errorRed, width: 2),
             ),
-            suffixIcon: isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryGreen),
-                    ),
-                  )
-                : null,
           ),
         ),
       ],

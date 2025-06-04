@@ -14,15 +14,15 @@ class Challenge with _$Challenge {
     required String primaryAdminId,
     required bool isPublic,
     String? thumbnailUrl,
-    required DateTime createdAt,
-    required DateTime updatedAt,
+    @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson) required DateTime createdAt,
+    @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson) required DateTime updatedAt,
     required List<String> keywords,
     required double rewardAmount,
     required int totalVideos,
     required double totalPossibleEarning,
     required String purpose,
-    DateTime? startDate,
-    DateTime? endDate,
+    @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson) DateTime? startDate,
+    @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson) DateTime? endDate,
   }) = _Challenge;
 
   factory Challenge.fromJson(Map<String, dynamic> json) => _$ChallengeFromJson(json);
@@ -32,10 +32,36 @@ class Challenge with _$Challenge {
     return Challenge.fromJson({
       'id': doc.id,
       ...data,
-      'createdAt': (data['createdAt'] as Timestamp).toDate().toIso8601String(),
-      'updatedAt': (data['updatedAt'] as Timestamp).toDate().toIso8601String(),
-      if (data['startDate'] != null) 'startDate': (data['startDate'] as Timestamp).toDate().toIso8601String(),
-      if (data['endDate'] != null) 'endDate': (data['endDate'] as Timestamp).toDate().toIso8601String(),
     });
   }
+}
+
+extension ChallengeFirestore on Challenge {
+  Map<String, dynamic> toFirestore() {
+    final json = toJson();
+    return {
+      ...json,
+      'createdAt': Timestamp.fromDate(createdAt),
+      'updatedAt': Timestamp.fromDate(updatedAt),
+      if (startDate != null) 'startDate': Timestamp.fromDate(startDate!),
+      if (endDate != null) 'endDate': Timestamp.fromDate(endDate!),
+    };
+  }
+}
+
+// Helper functions for DateTime/Timestamp conversion
+DateTime _timestampFromJson(dynamic timestamp) {
+  if (timestamp is Timestamp) {
+    return timestamp.toDate();
+  } else if (timestamp is String) {
+    return DateTime.parse(timestamp);
+  } else if (timestamp is int) {
+    return DateTime.fromMillisecondsSinceEpoch(timestamp);
+  }
+  throw ArgumentError('Invalid timestamp format');
+}
+
+dynamic _timestampToJson(DateTime? dateTime) {
+  if (dateTime == null) return null;
+  return Timestamp.fromDate(dateTime);
 }

@@ -12,18 +12,15 @@ _$PaymentImpl _$$PaymentImplFromJson(Map<String, dynamic> json) =>
       userId: json['userId'] as String,
       amount: (json['amount'] as num).toDouble(),
       status: json['status'] as String,
-      requestedAt: DateTime.parse(json['requestedAt'] as String),
-      processedAt: json['processedAt'] == null
-          ? null
-          : DateTime.parse(json['processedAt'] as String),
-      completedAt: json['completedAt'] == null
-          ? null
-          : DateTime.parse(json['completedAt'] as String),
+      requestedAt: _timestampFromJson(json['requestedAt']),
+      processedAt: _timestampFromJson(json['processedAt']),
+      completedAt: _timestampFromJson(json['completedAt']),
       bankAccountDetails: BankAccountDetails.fromJson(
           json['bankAccountDetails'] as Map<String, dynamic>),
-      adminNotes: json['adminNotes'] as String?,
+      adminNote: json['adminNote'] as String?,
       minimumThreshold: (json['minimumThreshold'] as num).toDouble(),
       processingTimeDays: (json['processingTimeDays'] as num).toInt(),
+      processedBy: json['processedBy'] as String?,
     );
 
 Map<String, dynamic> _$$PaymentImplToJson(_$PaymentImpl instance) =>
@@ -32,13 +29,14 @@ Map<String, dynamic> _$$PaymentImplToJson(_$PaymentImpl instance) =>
       'userId': instance.userId,
       'amount': instance.amount,
       'status': instance.status,
-      'requestedAt': instance.requestedAt.toIso8601String(),
-      'processedAt': instance.processedAt?.toIso8601String(),
-      'completedAt': instance.completedAt?.toIso8601String(),
+      'requestedAt': _timestampToJson(instance.requestedAt),
+      'processedAt': _timestampToJson(instance.processedAt),
+      'completedAt': _timestampToJson(instance.completedAt),
       'bankAccountDetails': instance.bankAccountDetails.toJson(),
-      'adminNotes': instance.adminNotes,
+      'adminNote': instance.adminNote,
       'minimumThreshold': instance.minimumThreshold,
       'processingTimeDays': instance.processingTimeDays,
+      'processedBy': instance.processedBy,
     };
 
 _$PaymentLogImpl _$$PaymentLogImplFromJson(Map<String, dynamic> json) =>
@@ -52,7 +50,7 @@ _$PaymentLogImpl _$$PaymentLogImplFromJson(Map<String, dynamic> json) =>
       amount: (json['amount'] as num).toDouble(),
       adminId: json['adminId'] as String?,
       notes: json['notes'] as String?,
-      timestamp: DateTime.parse(json['timestamp'] as String),
+      timestamp: _timestampFromJson(json['timestamp']),
       metadata: json['metadata'] as Map<String, dynamic>?,
     );
 
@@ -67,6 +65,6 @@ Map<String, dynamic> _$$PaymentLogImplToJson(_$PaymentLogImpl instance) =>
       'amount': instance.amount,
       'adminId': instance.adminId,
       'notes': instance.notes,
-      'timestamp': instance.timestamp.toIso8601String(),
+      'timestamp': _timestampToJson(instance.timestamp),
       'metadata': instance.metadata,
     };

@@ -14,7 +14,7 @@ class UserSettings with _$UserSettings {
     required String preferredLanguage,
     required String theme,
     required Map<String, dynamic> preferences,
-    required DateTime lastUpdated,
+    @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson) required DateTime lastUpdated,
   }) = _UserSettings;
 
   factory UserSettings.fromJson(Map<String, dynamic> json) => _$UserSettingsFromJson(json);
@@ -24,7 +24,32 @@ class UserSettings with _$UserSettings {
     return UserSettings.fromJson({
       'userId': doc.id,
       ...data,
-      'lastUpdated': (data['lastUpdated'] as Timestamp).toDate().toIso8601String(),
     });
   }
+}
+
+extension UserSettingsFirestore on UserSettings {
+  Map<String, dynamic> toFirestore() {
+    final json = toJson();
+    return {
+      ...json,
+      'lastUpdated': Timestamp.fromDate(lastUpdated),
+    };
+  }
+}
+
+// Helper functions for DateTime/Timestamp conversion
+DateTime _timestampFromJson(dynamic timestamp) {
+  if (timestamp is Timestamp) {
+    return timestamp.toDate();
+  } else if (timestamp is String) {
+    return DateTime.parse(timestamp);
+  } else if (timestamp is int) {
+    return DateTime.fromMillisecondsSinceEpoch(timestamp);
+  }
+  throw ArgumentError('Invalid timestamp format');
+}
+
+dynamic _timestampToJson(DateTime dateTime) {
+  return Timestamp.fromDate(dateTime);
 }

@@ -12,13 +12,14 @@ class Payment with _$Payment {
     required String userId,
     required double amount,
     required String status,
-    required DateTime requestedAt,
-    DateTime? processedAt,
-    DateTime? completedAt,
+    @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson) required DateTime requestedAt,
+    @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson) DateTime? processedAt,
+    @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson) DateTime? completedAt,
     required BankAccountDetails bankAccountDetails,
-    String? adminNotes,
+    String? adminNote,
     required double minimumThreshold,
     required int processingTimeDays,
+    String? processedBy,
   }) = _Payment;
 
   factory Payment.fromJson(Map<String, dynamic> json) => _$PaymentFromJson(json);
@@ -28,10 +29,19 @@ class Payment with _$Payment {
     return Payment.fromJson({
       'id': doc.id,
       ...data,
-      'requestedAt': (data['requestedAt'] as Timestamp).toDate().toIso8601String(),
-      if (data['processedAt'] != null) 'processedAt': (data['processedAt'] as Timestamp).toDate().toIso8601String(),
-      if (data['completedAt'] != null) 'completedAt': (data['completedAt'] as Timestamp).toDate().toIso8601String(),
     });
+  }
+}
+
+extension PaymentFirestore on Payment {
+  Map<String, dynamic> toFirestore() {
+    final json = toJson();
+    return {
+      ...json,
+      'requestedAt': Timestamp.fromDate(requestedAt),
+      if (processedAt != null) 'processedAt': Timestamp.fromDate(processedAt!),
+      if (completedAt != null) 'completedAt': Timestamp.fromDate(completedAt!),
+    };
   }
 }
 
@@ -47,7 +57,7 @@ class PaymentLog with _$PaymentLog {
     required double amount,
     String? adminId,
     String? notes,
-    required DateTime timestamp,
+    @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson) required DateTime timestamp,
     Map<String, dynamic>? metadata,
   }) = _PaymentLog;
 
@@ -58,7 +68,33 @@ class PaymentLog with _$PaymentLog {
     return PaymentLog.fromJson({
       'id': doc.id,
       ...data,
-      'timestamp': (data['timestamp'] as Timestamp).toDate().toIso8601String(),
     });
   }
+}
+
+extension PaymentLogFirestore on PaymentLog {
+  Map<String, dynamic> toFirestore() {
+    final json = toJson();
+    return {
+      ...json,
+      'timestamp': Timestamp.fromDate(timestamp),
+    };
+  }
+}
+
+// Helper functions for DateTime/Timestamp conversion
+DateTime _timestampFromJson(dynamic timestamp) {
+  if (timestamp is Timestamp) {
+    return timestamp.toDate();
+  } else if (timestamp is String) {
+    return DateTime.parse(timestamp);
+  } else if (timestamp is int) {
+    return DateTime.fromMillisecondsSinceEpoch(timestamp);
+  }
+  throw ArgumentError('Invalid timestamp format');
+}
+
+dynamic _timestampToJson(DateTime? dateTime) {
+  if (dateTime == null) return null;
+  return Timestamp.fromDate(dateTime);
 }

@@ -3,9 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../models/challenge.dart';
 import '../models/user_challenge.dart';
+import '../models/app_user.dart';
 import '../providers/challenges_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/duolingo_toast.dart';
+import '../repositories/auth_repository.dart';
+
+// Provider to fetch admin details
+final adminDetailsProvider = FutureProvider.family<AppUser?, String>((ref, adminId) async {
+  final authRepo = AuthRepository();
+  final doc = await authRepo.firestore.collection('users').doc(adminId).get();
+  if (!doc.exists) return null;
+  return AppUser.fromFirestore(doc);
+});
 
 class ChallengesListScreen extends ConsumerStatefulWidget {
   final bool showBackButton;
@@ -172,7 +182,7 @@ class _ChallengesListScreenState extends ConsumerState<ChallengesListScreen> {
   }
 }
 
-class _ChallengeCard extends StatelessWidget {
+class _ChallengeCard extends ConsumerWidget {
   final Challenge challenge;
   final UserChallenge? userChallenge;
   final VoidCallback onJoin;
@@ -188,8 +198,9 @@ class _ChallengeCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isJoined = userChallenge != null;
+    final adminDetails = ref.watch(adminDetailsProvider(challenge.primaryAdminId));
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -232,6 +243,30 @@ class _ChallengeCard extends StatelessWidget {
                         '${challenge.totalVideos} videos • ₹${challenge.rewardAmount.toStringAsFixed(0)} reward',
                         style: const TextStyle(
                           color: AppTheme.textLight,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      adminDetails.when(
+                        data: (admin) => Text(
+                          'Created by ${admin?.displayName ?? 'Unknown'}',
+                          style: const TextStyle(
+                            color: AppTheme.textLight,
+                            fontSize: 12,
+                          ),
+                        ),
+                        loading: () => const SizedBox(
+                          height: 16,
+                          width: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        ),
+                        error: (_, __) => const Text(
+                          'Created by Unknown',
+                          style: TextStyle(
+                            color: AppTheme.textLight,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                     ],

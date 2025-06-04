@@ -24,14 +24,18 @@ mixin _$Payment {
   String get userId => throw _privateConstructorUsedError;
   double get amount => throw _privateConstructorUsedError;
   String get status => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   DateTime get requestedAt => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   DateTime? get processedAt => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   DateTime? get completedAt => throw _privateConstructorUsedError;
   BankAccountDetails get bankAccountDetails =>
       throw _privateConstructorUsedError;
-  String? get adminNotes => throw _privateConstructorUsedError;
+  String? get adminNote => throw _privateConstructorUsedError;
   double get minimumThreshold => throw _privateConstructorUsedError;
   int get processingTimeDays => throw _privateConstructorUsedError;
+  String? get processedBy => throw _privateConstructorUsedError;
 
   /// Serializes this Payment to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -52,13 +56,17 @@ abstract class $PaymentCopyWith<$Res> {
       String userId,
       double amount,
       String status,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       DateTime requestedAt,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       DateTime? processedAt,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       DateTime? completedAt,
       BankAccountDetails bankAccountDetails,
-      String? adminNotes,
+      String? adminNote,
       double minimumThreshold,
-      int processingTimeDays});
+      int processingTimeDays,
+      String? processedBy});
 
   $BankAccountDetailsCopyWith<$Res> get bankAccountDetails;
 }
@@ -86,9 +94,10 @@ class _$PaymentCopyWithImpl<$Res, $Val extends Payment>
     Object? processedAt = freezed,
     Object? completedAt = freezed,
     Object? bankAccountDetails = null,
-    Object? adminNotes = freezed,
+    Object? adminNote = freezed,
     Object? minimumThreshold = null,
     Object? processingTimeDays = null,
+    Object? processedBy = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -123,9 +132,9 @@ class _$PaymentCopyWithImpl<$Res, $Val extends Payment>
           ? _value.bankAccountDetails
           : bankAccountDetails // ignore: cast_nullable_to_non_nullable
               as BankAccountDetails,
-      adminNotes: freezed == adminNotes
-          ? _value.adminNotes
-          : adminNotes // ignore: cast_nullable_to_non_nullable
+      adminNote: freezed == adminNote
+          ? _value.adminNote
+          : adminNote // ignore: cast_nullable_to_non_nullable
               as String?,
       minimumThreshold: null == minimumThreshold
           ? _value.minimumThreshold
@@ -135,6 +144,10 @@ class _$PaymentCopyWithImpl<$Res, $Val extends Payment>
           ? _value.processingTimeDays
           : processingTimeDays // ignore: cast_nullable_to_non_nullable
               as int,
+      processedBy: freezed == processedBy
+          ? _value.processedBy
+          : processedBy // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 
@@ -162,13 +175,17 @@ abstract class _$$PaymentImplCopyWith<$Res> implements $PaymentCopyWith<$Res> {
       String userId,
       double amount,
       String status,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       DateTime requestedAt,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       DateTime? processedAt,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       DateTime? completedAt,
       BankAccountDetails bankAccountDetails,
-      String? adminNotes,
+      String? adminNote,
       double minimumThreshold,
-      int processingTimeDays});
+      int processingTimeDays,
+      String? processedBy});
 
   @override
   $BankAccountDetailsCopyWith<$Res> get bankAccountDetails;
@@ -195,9 +212,10 @@ class __$$PaymentImplCopyWithImpl<$Res>
     Object? processedAt = freezed,
     Object? completedAt = freezed,
     Object? bankAccountDetails = null,
-    Object? adminNotes = freezed,
+    Object? adminNote = freezed,
     Object? minimumThreshold = null,
     Object? processingTimeDays = null,
+    Object? processedBy = freezed,
   }) {
     return _then(_$PaymentImpl(
       id: null == id
@@ -232,9 +250,9 @@ class __$$PaymentImplCopyWithImpl<$Res>
           ? _value.bankAccountDetails
           : bankAccountDetails // ignore: cast_nullable_to_non_nullable
               as BankAccountDetails,
-      adminNotes: freezed == adminNotes
-          ? _value.adminNotes
-          : adminNotes // ignore: cast_nullable_to_non_nullable
+      adminNote: freezed == adminNote
+          ? _value.adminNote
+          : adminNote // ignore: cast_nullable_to_non_nullable
               as String?,
       minimumThreshold: null == minimumThreshold
           ? _value.minimumThreshold
@@ -244,6 +262,10 @@ class __$$PaymentImplCopyWithImpl<$Res>
           ? _value.processingTimeDays
           : processingTimeDays // ignore: cast_nullable_to_non_nullable
               as int,
+      processedBy: freezed == processedBy
+          ? _value.processedBy
+          : processedBy // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -256,13 +278,17 @@ class _$PaymentImpl implements _Payment {
       required this.userId,
       required this.amount,
       required this.status,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       required this.requestedAt,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       this.processedAt,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       this.completedAt,
       required this.bankAccountDetails,
-      this.adminNotes,
+      this.adminNote,
       required this.minimumThreshold,
-      required this.processingTimeDays});
+      required this.processingTimeDays,
+      this.processedBy});
 
   factory _$PaymentImpl.fromJson(Map<String, dynamic> json) =>
       _$$PaymentImplFromJson(json);
@@ -276,23 +302,28 @@ class _$PaymentImpl implements _Payment {
   @override
   final String status;
   @override
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   final DateTime requestedAt;
   @override
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   final DateTime? processedAt;
   @override
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   final DateTime? completedAt;
   @override
   final BankAccountDetails bankAccountDetails;
   @override
-  final String? adminNotes;
+  final String? adminNote;
   @override
   final double minimumThreshold;
   @override
   final int processingTimeDays;
+  @override
+  final String? processedBy;
 
   @override
   String toString() {
-    return 'Payment(id: $id, userId: $userId, amount: $amount, status: $status, requestedAt: $requestedAt, processedAt: $processedAt, completedAt: $completedAt, bankAccountDetails: $bankAccountDetails, adminNotes: $adminNotes, minimumThreshold: $minimumThreshold, processingTimeDays: $processingTimeDays)';
+    return 'Payment(id: $id, userId: $userId, amount: $amount, status: $status, requestedAt: $requestedAt, processedAt: $processedAt, completedAt: $completedAt, bankAccountDetails: $bankAccountDetails, adminNote: $adminNote, minimumThreshold: $minimumThreshold, processingTimeDays: $processingTimeDays, processedBy: $processedBy)';
   }
 
   @override
@@ -312,12 +343,14 @@ class _$PaymentImpl implements _Payment {
                 other.completedAt == completedAt) &&
             (identical(other.bankAccountDetails, bankAccountDetails) ||
                 other.bankAccountDetails == bankAccountDetails) &&
-            (identical(other.adminNotes, adminNotes) ||
-                other.adminNotes == adminNotes) &&
+            (identical(other.adminNote, adminNote) ||
+                other.adminNote == adminNote) &&
             (identical(other.minimumThreshold, minimumThreshold) ||
                 other.minimumThreshold == minimumThreshold) &&
             (identical(other.processingTimeDays, processingTimeDays) ||
-                other.processingTimeDays == processingTimeDays));
+                other.processingTimeDays == processingTimeDays) &&
+            (identical(other.processedBy, processedBy) ||
+                other.processedBy == processedBy));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -332,9 +365,10 @@ class _$PaymentImpl implements _Payment {
       processedAt,
       completedAt,
       bankAccountDetails,
-      adminNotes,
+      adminNote,
       minimumThreshold,
-      processingTimeDays);
+      processingTimeDays,
+      processedBy);
 
   /// Create a copy of Payment
   /// with the given fields replaced by the non-null parameter values.
@@ -358,13 +392,17 @@ abstract class _Payment implements Payment {
       required final String userId,
       required final double amount,
       required final String status,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       required final DateTime requestedAt,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       final DateTime? processedAt,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       final DateTime? completedAt,
       required final BankAccountDetails bankAccountDetails,
-      final String? adminNotes,
+      final String? adminNote,
       required final double minimumThreshold,
-      required final int processingTimeDays}) = _$PaymentImpl;
+      required final int processingTimeDays,
+      final String? processedBy}) = _$PaymentImpl;
 
   factory _Payment.fromJson(Map<String, dynamic> json) = _$PaymentImpl.fromJson;
 
@@ -377,19 +415,24 @@ abstract class _Payment implements Payment {
   @override
   String get status;
   @override
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   DateTime get requestedAt;
   @override
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   DateTime? get processedAt;
   @override
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   DateTime? get completedAt;
   @override
   BankAccountDetails get bankAccountDetails;
   @override
-  String? get adminNotes;
+  String? get adminNote;
   @override
   double get minimumThreshold;
   @override
   int get processingTimeDays;
+  @override
+  String? get processedBy;
 
   /// Create a copy of Payment
   /// with the given fields replaced by the non-null parameter values.
@@ -414,6 +457,7 @@ mixin _$PaymentLog {
   double get amount => throw _privateConstructorUsedError;
   String? get adminId => throw _privateConstructorUsedError;
   String? get notes => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   DateTime get timestamp => throw _privateConstructorUsedError;
   Map<String, dynamic>? get metadata => throw _privateConstructorUsedError;
 
@@ -443,6 +487,7 @@ abstract class $PaymentLogCopyWith<$Res> {
       double amount,
       String? adminId,
       String? notes,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       DateTime timestamp,
       Map<String, dynamic>? metadata});
 }
@@ -541,6 +586,7 @@ abstract class _$$PaymentLogImplCopyWith<$Res>
       double amount,
       String? adminId,
       String? notes,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       DateTime timestamp,
       Map<String, dynamic>? metadata});
 }
@@ -632,6 +678,7 @@ class _$PaymentLogImpl implements _PaymentLog {
       required this.amount,
       this.adminId,
       this.notes,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       required this.timestamp,
       final Map<String, dynamic>? metadata})
       : _metadata = metadata;
@@ -658,6 +705,7 @@ class _$PaymentLogImpl implements _PaymentLog {
   @override
   final String? notes;
   @override
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   final DateTime timestamp;
   final Map<String, dynamic>? _metadata;
   @override
@@ -739,6 +787,7 @@ abstract class _PaymentLog implements PaymentLog {
       required final double amount,
       final String? adminId,
       final String? notes,
+      @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
       required final DateTime timestamp,
       final Map<String, dynamic>? metadata}) = _$PaymentLogImpl;
 
@@ -764,6 +813,7 @@ abstract class _PaymentLog implements PaymentLog {
   @override
   String? get notes;
   @override
+  @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
   DateTime get timestamp;
   @override
   Map<String, dynamic>? get metadata;

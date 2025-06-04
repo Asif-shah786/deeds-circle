@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
-import '../providers/challenges_provider.dart';
 import '../theme/app_theme.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -80,10 +79,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
         // Wait for AppUser data to be loaded
         final appUserAsync = ref.read(currentUserProvider);
         if (appUserAsync.hasValue && appUserAsync.value != null) {
-          // Load challenges data
-          await ref.read(challengesProvider.notifier).loadChallenges();
-
-          // Fade out before navigation
           await _fadeController.reverse();
           if (!mounted) return;
           context.go('/home');
@@ -92,9 +87,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
           appUserAsync.when(
             data: (appUser) async {
               if (appUser != null) {
-                // Load challenges data
-                await ref.read(challengesProvider.notifier).loadChallenges();
-
                 await _fadeController.reverse();
                 if (!mounted) return;
                 context.go('/home');
