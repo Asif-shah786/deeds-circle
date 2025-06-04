@@ -9,6 +9,14 @@ class UserChallengeRepository {
     FirebaseFirestore? firestore,
   }) : _firestore = firestore ?? FirebaseFirestore.instance;
 
+  Stream<List<UserChallenge>> getUserChallengesStream(String userId) {
+    return _firestore
+        .collection('user_challenges')
+        .where('userId', isEqualTo: userId)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => UserChallenge.fromFirestore(doc)).toList());
+  }
+
   Future<List<UserChallenge>> getUserChallenges(String userId) async {
     try {
       final snapshot = await _firestore.collection('user_challenges').where('userId', isEqualTo: userId).get();
