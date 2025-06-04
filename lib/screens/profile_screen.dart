@@ -72,7 +72,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
       body: userAsync.when(
         data: (appUser) {
-          if (appUser == null) return const SizedBox.shrink();
+          if (appUser == null) {
+            return const Center(
+              child: Text(
+                'No user data found',
+                style: TextStyle(color: AppTheme.textDark),
+              ),
+            );
+          }
 
           return RefreshIndicator(
             onRefresh: () async {
@@ -155,14 +162,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         const SizedBox(height: 16),
                         _buildAchievementCard(
                           'Total Earnings',
-                          '\$${appUser.totalEarnings.toStringAsFixed(2)}',
-                          Icons.attach_money,
+                          'Rs ${appUser.totalEarnings.toStringAsFixed(0)}',
+                          Icons.money,
                           AppTheme.primaryGreen,
                         ),
                         const SizedBox(height: 12),
                         _buildAchievementCard(
                           'Total Paid',
-                          '\$${appUser.totalPaid.toStringAsFixed(2)}',
+                          'Rs ${appUser.totalPaid.toStringAsFixed(0)}',
                           Icons.payments,
                           AppTheme.warningYellow,
                         ),
@@ -288,9 +295,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Error: ${error.toString()}',
+                'Error loading profile: ${error.toString()}',
                 style: const TextStyle(color: AppTheme.errorRed),
                 textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  ref.invalidate(currentUserProvider);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryGreen,
+                ),
+                child: const Text('Retry'),
               ),
             ],
           ),

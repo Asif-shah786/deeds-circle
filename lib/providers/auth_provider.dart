@@ -12,9 +12,22 @@ final authStateProvider = StreamProvider<User?>((ref) {
   return repository.authStateChanges;
 });
 
-final currentUserProvider = FutureProvider<AppUser?>((ref) async {
+final currentUserProvider = StreamProvider<AppUser?>((ref) {
   final repository = ref.watch(authRepositoryProvider);
-  return repository.getCurrentUser();
+  final authState = ref.watch(authStateProvider);
+
+  return authState.when(
+    data: (user) {
+      if (user == null) return Stream.value(null);
+      return repository.firestore
+          .collection('users')
+          .doc(user.uid)
+          .snapshots()
+          .map((doc) => doc.exists ? AppUser.fromFirestore(doc) : null);
+    },
+    loading: () => const Stream.empty(),
+    error: (_, __) => Stream.value(null),
+  );
 });
 
 class AuthNotifier extends StateNotifier<AsyncValue<void>> {

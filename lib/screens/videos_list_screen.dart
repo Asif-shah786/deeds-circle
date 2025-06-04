@@ -6,10 +6,12 @@ import '../models/user_challenge.dart';
 import '../models/video.dart';
 import '../providers/challenges_provider.dart';
 import '../providers/repository_providers.dart';
+import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 import '../widgets/duolingo_toast_helper.dart';
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 final videosProvider = FutureProvider.family<List<Video>, String>((ref, challengeId) async {
   print('VideosProvider: Fetching videos for challenge $challengeId');
@@ -20,6 +22,15 @@ final videosProvider = FutureProvider.family<List<Video>, String>((ref, challeng
     print('Video: ${video.title} - URL: ${video.videoUrl}');
   }
   return videos;
+});
+
+final videoProgressProvider = StreamProvider.family<Map<String, dynamic>?, (String, String)>((ref, params) {
+  final (userId, videoId) = params;
+  return FirebaseFirestore.instance
+      .collection('user_video_progress')
+      .doc('${userId}_${params.$1}_${params.$2}')
+      .snapshots()
+      .map((doc) => doc.data());
 });
 
 class VideosListScreen extends ConsumerStatefulWidget {
@@ -109,6 +120,7 @@ class _VideosListScreenState extends ConsumerState<VideosListScreen> with Single
   @override
   Widget build(BuildContext context) {
     final challengesState = ref.watch(challengesProvider);
+    final user = ref.watch(authStateProvider).value;
 
     if (challengesState.isLoading) {
       return const Scaffold(
@@ -314,48 +326,102 @@ class _VideosListScreenState extends ConsumerState<VideosListScreen> with Single
                                 padding: const EdgeInsets.all(16),
                                 child: Row(
                                   children: [
-                                    // Video Thumbnail
-                                    Container(
-                                      width: 120,
-                                      height: 68,
-                                      decoration: BoxDecoration(
-                                        color: isLocked
-                                            ? AppTheme.progressLocked.withOpacity(0.1)
-                                            : AppTheme.primaryBlue.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Stack(
-                                        alignment: Alignment.center,
-                                        children: [
-                                          if (!isLocked)
-                                            Icon(
-                                              isCurrentVideo ? Icons.play_circle : Icons.play_circle_outline,
-                                              size: 32,
-                                              color: isCurrentVideo ? AppTheme.primaryGreen : AppTheme.primaryBlue,
-                                            ),
-                                          if (isLocked)
-                                            const Icon(
-                                              Icons.lock,
-                                              size: 24,
-                                              color: AppTheme.progressLocked,
-                                            ),
-                                          if (isNewlyCompleted && _showCelebration)
-                                            ScaleTransition(
-                                              scale: _scaleAnimation,
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                  color: AppTheme.completedColor.withOpacity(0.2),
-                                                  borderRadius: BorderRadius.circular(8),
-                                                ),
-                                                child: const Icon(
-                                                  Icons.check_circle,
-                                                  color: AppTheme.completedColor,
-                                                  size: 32,
-                                                ),
+                                    // Video Thumbnail with Centered State Icon/Progress
+                                    Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        Container(
+                                          width: 120,
+                                          height: 68,
+                                          decoration: BoxDecoration(
+                                            color: isLocked
+                                                ? AppTheme.progressLocked.withOpacity(0.1)
+                                                : AppTheme.primaryGreen.withOpacity(0.1),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                        ),
+                                        if (isLocked)
+                                          const Icon(
+                                            Icons.lock,
+                                            size: 32,
+                                            color: AppTheme.progressLocked,
+                                          )
+                                        else if (isCompleted)
+                                          const Icon(
+                                            Icons.check_circle,
+                                            size: 32,
+                                            color: AppTheme.completedColor,
+                                          )
+                                        else if (user != null)
+                                          StreamBuilder<DocumentSnapshot>(
+                                            stream: FirebaseFirestore.instance
+                                                .collection('user_video_progress')
+                                                .doc('${user.uid}_${widget.challengeId}_${video.id}')
+                                                .snapshots(),
+                                            builder: (context, snapshot) {
+                                              if (snapshot.hasData && snapshot.data?.exists == true) {
+                                                final data = snapshot.data!.data() as Map<String, dynamic>?;
+                                                if (data != null) {
+                                                  final totalWatchTime = data['totalWatchTime'] as int? ?? 0;
+                                                  final progress = totalWatchTime / video.durationSeconds;
+                                                  if (progress > 0 && progress < 1) {
+                                                    return Stack(
+                                                      alignment: Alignment.center,
+                                                      children: [
+                                                        SizedBox(
+                                                          width: 36,
+                                                          height: 36,
+                                                          child: CircularProgressIndicator(
+                                                            value: progress,
+                                                            backgroundColor: Colors.grey[300],
+                                                            valueColor:
+                                                                AlwaysStoppedAnimation<Color>(AppTheme.primaryGreen),
+                                                            strokeWidth: 4,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          '${(progress * 100).toStringAsFixed(0)}%',
+                                                          style: TextStyle(
+                                                            fontSize: 13,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: AppTheme.primaryGreen,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  }
+                                                }
+                                              }
+                                              // Not started: show play icon
+                                              return Icon(
+                                                isCurrentVideo ? Icons.play_circle : Icons.play_circle_outline,
+                                                size: 32,
+                                                color: isCurrentVideo ? AppTheme.primaryGreen : AppTheme.primaryBlue,
+                                              );
+                                            },
+                                          )
+                                        else
+                                          Icon(
+                                            isCurrentVideo ? Icons.play_circle : Icons.play_circle_outline,
+                                            size: 32,
+                                            color: isCurrentVideo ? AppTheme.primaryGreen : AppTheme.primaryBlue,
+                                          ),
+                                        if (isNewlyCompleted && _showCelebration)
+                                          ScaleTransition(
+                                            scale: _scaleAnimation,
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                color: AppTheme.completedColor.withOpacity(0.2),
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                              child: const Icon(
+                                                Icons.check_circle,
+                                                color: AppTheme.completedColor,
+                                                size: 32,
                                               ),
                                             ),
-                                        ],
-                                      ),
+                                          ),
+                                      ],
                                     ),
                                     const SizedBox(width: 16),
                                     // Video Info
@@ -412,76 +478,7 @@ class _VideosListScreenState extends ConsumerState<VideosListScreen> with Single
                                               ),
                                             ],
                                           ),
-                                          if (isCompleted) ...[
-                                            const SizedBox(height: 4),
-                                            Row(
-                                              children: [
-                                                Icon(
-                                                  Icons.check_circle,
-                                                  size: 16,
-                                                  color: AppTheme.completedColor,
-                                                ),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                  'Completed',
-                                                  style: AppTheme.bodySmall.copyWith(
-                                                    color: AppTheme.completedColor,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ] else if (isCurrentVideo) ...[
-                                            const SizedBox(height: 4),
-                                            Row(
-                                              children: [
-                                                Icon(
-                                                  Icons.play_circle,
-                                                  size: 16,
-                                                  color: AppTheme.primaryGreen,
-                                                ),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                  'Continue Here',
-                                                  style: AppTheme.bodySmall.copyWith(
-                                                    color: AppTheme.primaryGreen,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
                                         ],
-                                      ),
-                                    ),
-                                    // Status Icon
-                                    Container(
-                                      width: 32,
-                                      height: 32,
-                                      decoration: BoxDecoration(
-                                        color: isCompleted
-                                            ? AppTheme.completedColor.withOpacity(0.1)
-                                            : isCurrentVideo
-                                                ? AppTheme.primaryGreen.withOpacity(0.1)
-                                                : isLocked
-                                                    ? AppTheme.progressLocked.withOpacity(0.1)
-                                                    : AppTheme.primaryBlue.withOpacity(0.1),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Icon(
-                                        isCompleted
-                                            ? Icons.check_circle
-                                            : isCurrentVideo
-                                                ? Icons.play_circle
-                                                : isLocked
-                                                    ? Icons.lock
-                                                    : Icons.play_circle_outline,
-                                        color: isCompleted
-                                            ? AppTheme.completedColor
-                                            : isCurrentVideo
-                                                ? AppTheme.primaryGreen
-                                                : isLocked
-                                                    ? AppTheme.progressLocked
-                                                    : AppTheme.primaryBlue,
-                                        size: 20,
                                       ),
                                     ),
                                   ],

@@ -34,14 +34,21 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
   YoutubePlayerController? _controller;
   bool _isInitialized = false;
   bool _isCompleted = false;
-  bool _hasReachedThreshold = false;
   bool _showCompletionStatus = false;
-  static const int _requiredWatchSeconds = 10; // Must watch 10 seconds
+  static const double _requiredWatchPercentage = 0.5; // 50% of video
+  Duration _lastPosition = Duration.zero;
+  DateTime? _lastProgressCheck;
+  Video? _currentVideo;
+  Duration _totalWatchTime = Duration.zero;
+  bool _isPlaying = false;
+  String? _currentSessionId;
+  bool _isFullScreen = false;
 
   @override
   void initState() {
     super.initState();
     _checkInitialCompletionStatus();
+    _loadWatchProgress();
   }
 
   Future<void> _checkInitialCompletionStatus() async {
@@ -58,12 +65,17 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
 
   @override
   void dispose() {
+    _saveWatchProgress();
     _controller?.dispose();
     super.dispose();
   }
 
   String _getVideoId(String url) {
     return YoutubePlayer.convertUrlToId(url) ?? '';
+  }
+
+  String _generateSessionId() {
+    return '${widget.challengeId}_${widget.videoId}_${DateTime.now().millisecondsSinceEpoch}';
   }
 
   Future<void> _initializePlayer(String videoUrl) async {
@@ -81,6 +93,7 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
     }
 
     _controller?.dispose();
+    _currentSessionId = _generateSessionId();
 
     _controller = YoutubePlayerController(
       initialVideoId: videoId,
@@ -93,13 +106,36 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
       ),
     );
 
-    // Add listeners for video progress and completion
+    // Add listener for video progress and completion
     _controller!.addListener(() {
-      if (_controller!.value.isPlaying) {
+      final isPlaying = _controller!.value.isPlaying;
+      if (isPlaying != _isPlaying) {
+        _isPlaying = isPlaying;
+        if (!isPlaying) {
+          // Save current watch time when video is paused
+          _saveWatchProgress();
+        }
+      }
+
+      if (isPlaying) {
         final position = _controller!.value.position;
         _onVideoProgress(position);
       }
+
+      // Check for fullscreen state
+      final isFullScreen = _controller!.value.isFullScreen;
+      if (isFullScreen != _isFullScreen) {
+        setState(() {
+          _isFullScreen = isFullScreen;
+        });
+      }
     });
+
+    // Load previous progress and seek to last position
+    await _loadWatchProgress();
+    if (_lastPosition > Duration.zero) {
+      _controller!.seekTo(_lastPosition);
+    }
 
     if (mounted) {
       setState(() {
@@ -109,10 +145,128 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
   }
 
   void _onVideoProgress(Duration position) {
-    // Check if we've watched 10 seconds
-    if (!_hasReachedThreshold && position.inSeconds >= _requiredWatchSeconds) {
-      _hasReachedThreshold = true;
-      _markVideoAsCompleted();
+    // Rate limiting - only check once per second
+    final now = DateTime.now();
+    if (_lastProgressCheck != null && now.difference(_lastProgressCheck!) < const Duration(seconds: 1)) {
+      return;
+    }
+    _lastProgressCheck = now;
+
+    // Verify video is actually playing (position is increasing)
+    if (position <= _lastPosition) {
+      return;
+    }
+
+    // Calculate watch time for this session
+    final watchTime = position - _lastPosition;
+    _totalWatchTime += watchTime;
+    _lastPosition = position;
+
+    // Get video data if not already available
+    if (_currentVideo == null) {
+      final videoAsync = ref.read(videoProvider((widget.challengeId, widget.videoId)));
+      videoAsync.whenData((video) {
+        if (video != null) {
+          _currentVideo = video;
+          _checkProgress();
+        }
+      });
+    } else {
+      _checkProgress();
+    }
+  }
+
+  void _checkProgress() {
+    if (!_isCompleted && _currentVideo != null) {
+      // Ensure video duration is valid
+      if (_currentVideo!.durationSeconds <= 0) {
+        print('Warning: Invalid video duration: ${_currentVideo!.durationSeconds}');
+        return;
+      }
+
+      final progress = _totalWatchTime.inSeconds / _currentVideo!.durationSeconds;
+
+      // Log progress for debugging
+      print(
+          'Video progress: ${(progress * 100).toStringAsFixed(1)}% (Total watch time: ${_totalWatchTime.inSeconds}s)');
+
+      if (progress >= _requiredWatchPercentage) {
+        print('Reached completion threshold');
+        _markVideoAsCompleted();
+      }
+    }
+  }
+
+  Future<void> _saveWatchProgress() async {
+    if (_currentVideo == null || _currentSessionId == null) return;
+
+    try {
+      final user = ref.read(authStateProvider).value;
+      if (user == null) return;
+
+      // Save progress to Firestore with challenge and session specific data
+      await FirebaseFirestore.instance
+          .collection('user_video_progress')
+          .doc('${user.uid}_${widget.challengeId}_${widget.videoId}')
+          .set({
+        'userId': user.uid,
+        'videoId': widget.videoId,
+        'challengeId': widget.challengeId,
+        'sessionId': _currentSessionId,
+        'totalWatchTime': _totalWatchTime.inSeconds,
+        'lastPosition': _lastPosition.inSeconds,
+        'lastUpdated': FieldValue.serverTimestamp(),
+        'isCompleted': _isCompleted,
+        'videoDuration': _currentVideo?.durationSeconds,
+      }, SetOptions(merge: true));
+
+      print(
+          'Saved watch progress: ${_totalWatchTime.inSeconds}s at position ${_lastPosition.inSeconds}s for video ${widget.videoId} in challenge ${widget.challengeId}');
+    } catch (e) {
+      print('Error saving watch progress: $e');
+    }
+  }
+
+  Future<void> _loadWatchProgress() async {
+    try {
+      final user = ref.read(authStateProvider).value;
+      if (user == null) return;
+
+      // Load progress for this specific challenge-video combination
+      final doc = await FirebaseFirestore.instance
+          .collection('user_video_progress')
+          .doc('${user.uid}_${widget.challengeId}_${widget.videoId}')
+          .get();
+
+      if (doc.exists) {
+        final data = doc.data() as Map<String, dynamic>;
+        _totalWatchTime = Duration(seconds: data['totalWatchTime'] ?? 0);
+        _lastPosition = Duration(seconds: data['lastPosition'] ?? 0);
+
+        // If video was already completed in this challenge, mark it as completed
+        if (data['isCompleted'] == true) {
+          if (mounted) {
+            setState(() {
+              _isCompleted = true;
+            });
+          }
+        }
+
+        print(
+            'Loaded watch progress: ${_totalWatchTime.inSeconds}s at position ${_lastPosition.inSeconds}s for video ${widget.videoId} in challenge ${widget.challengeId}');
+
+        // Check progress with loaded watch time
+        if (_currentVideo != null) {
+          _checkProgress();
+        }
+      } else {
+        // If no progress exists for this challenge-video combination, start fresh
+        _totalWatchTime = Duration.zero;
+        _lastPosition = Duration.zero;
+        print('No previous progress found for video ${widget.videoId} in challenge ${widget.challengeId}');
+      }
+    } catch (e) {
+      print('Error loading watch progress: $e');
     }
   }
 
@@ -149,12 +303,12 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
         return;
       }
 
-      // Only mark as completed if we've watched enough
-      if (!_hasReachedThreshold) {
+      // Double check if we've watched enough
+      if (_totalWatchTime.inSeconds < (video.durationSeconds * _requiredWatchPercentage)) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Please watch at least 10 seconds of the video'),
+              content: Text('Please watch at least 50% of the video'),
               backgroundColor: AppTheme.errorRed,
             ),
           );
@@ -162,7 +316,7 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
         return;
       }
 
-      // Check if video is already completed
+      // Check if video is already completed in this challenge
       if (userChallenge.completedVideoIds.contains(widget.videoId)) {
         if (mounted) {
           setState(() {
@@ -211,11 +365,33 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
         userChallengeId = querySnapshot.docs.first.id;
       }
 
+      // Verify one last time that the video hasn't been completed in this challenge
+      final doc = await FirebaseFirestore.instance.collection('user_challenges').doc(userChallengeId).get();
+
+      if (doc.exists) {
+        final data = doc.data() as Map<String, dynamic>;
+        final completedVideos = List<String>.from(data['completedVideoIds'] ?? []);
+        if (completedVideos.contains(widget.videoId)) {
+          if (mounted) {
+            setState(() {
+              _isCompleted = true;
+            });
+          }
+          return;
+        }
+      }
+
+      // Log completion attempt
+      print('Marking video as completed: ${video.title} in challenge ${widget.challengeId}');
+
       await ref.read(userChallengeRepositoryProvider).markVideoAsCompleted(
             userChallengeId,
             widget.videoId,
             video.title,
           );
+
+      // Save completion status to progress document
+      await _saveWatchProgress();
 
       // Refresh challenges state
       await ref.read(challengesProvider.notifier).loadChallenges();
@@ -247,6 +423,7 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
         });
       }
     } catch (e) {
+      print('Error marking video as completed: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -290,105 +467,156 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
                             controller: _controller!,
                             showVideoProgressIndicator: true,
                             progressIndicatorColor: AppTheme.primaryGreen,
+                            progressColors: ProgressBarColors(
+                              playedColor: AppTheme.primaryGreen,
+                              handleColor: AppTheme.primaryGreen,
+                              backgroundColor: Colors.grey[300],
+                              bufferedColor: AppTheme.primaryGreen.withOpacity(0.3),
+                            ),
                             onReady: () {
-                              // Check if video is already completed when player is ready
+                              if (_lastPosition > Duration.zero) {
+                                _controller!.seekTo(_lastPosition);
+                              }
                               _checkInitialCompletionStatus();
                             },
                             onEnded: (data) {
-                              // Mark as completed when video ends
                               _markVideoAsCompleted();
                             },
                           ),
                           builder: (context, player) {
-                            return AspectRatio(
-                              aspectRatio: 16 / 9,
-                              child: player,
+                            return Stack(
+                              children: [
+                                AspectRatio(
+                                  aspectRatio: 16 / 9,
+                                  child: player,
+                                ),
+                                if (!_isFullScreen) ...[
+                                  // Video Title and Back Button
+                                  Positioned(
+                                    top: 0,
+                                    left: 0,
+                                    right: 0,
+                                    child: Container(
+                                      padding: const EdgeInsets.only(top: 8, bottom: 12),
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                          colors: [
+                                            Colors.black.withOpacity(0.7),
+                                            Colors.transparent,
+                                          ],
+                                        ),
+                                      ),
+                                      child: SafeArea(
+                                        child: Column(
+                                          children: [
+                                            // Title and Back Button Row
+                                            Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                                              child: Row(
+                                                children: [
+                                                  IconButton(
+                                                    icon: Container(
+                                                      padding: const EdgeInsets.all(8),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.black.withOpacity(0.5),
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                      child: const Icon(
+                                                        Icons.arrow_back_ios_new_rounded,
+                                                        color: Colors.white,
+                                                        size: 20,
+                                                      ),
+                                                    ),
+                                                    onPressed: () => Navigator.pop(context),
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  Expanded(
+                                                    child: Text(
+                                                      video.title,
+                                                      style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 18,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  // Completion Toast
+                                  if (_showCompletionStatus)
+                                    Positioned(
+                                      top: 16,
+                                      left: 16,
+                                      right: 16,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.primaryGreen.withOpacity(0.9),
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        child: const Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.check_circle,
+                                              color: Colors.white,
+                                              size: 20,
+                                            ),
+                                            SizedBox(width: 8),
+                                            Text(
+                                              'Video completed!',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ],
                             );
                           },
                         )
-                      : const CircularProgressIndicator(
-                          color: AppTheme.primaryGreen,
-                        ),
-                ),
-                // Back Button
-                Positioned(
-                  top: 8,
-                  left: 8,
-                  child: IconButton(
-                    icon: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.5),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.arrow_back_ios_new_rounded,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ),
-                // Video Info
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      video.title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-                // Completion Status
-                if (_showCompletionStatus)
-                  Positioned(
-                    top: 8,
-                    left: 0,
-                    right: 0,
-                    child: Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: AppTheme.completedColor.withOpacity(0.9),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.check_circle,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                            SizedBox(width: 8),
-                            Text(
-                              'Video Completed',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
+                      : Container(
+                          color: Colors.black,
+                          child: const Center(
+                            child: SizedBox(
+                              width: 40,
+                              height: 40,
+                              child: CircularProgressIndicator(
+                                color: AppTheme.primaryGreen,
+                                strokeWidth: 3,
                               ),
                             ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
-                  ),
+                ),
               ],
             );
           },
-          loading: () => const Center(
-            child: CircularProgressIndicator(
-              color: AppTheme.primaryGreen,
+          loading: () => Container(
+            color: Colors.black,
+            child: const Center(
+              child: SizedBox(
+                width: 40,
+                height: 40,
+                child: CircularProgressIndicator(
+                  color: AppTheme.primaryGreen,
+                  strokeWidth: 3,
+                ),
+              ),
             ),
           ),
           error: (error, stack) => Center(

@@ -313,14 +313,8 @@ class LeaderboardScreen extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        Icon(
-                          Icons.attach_money,
-                          size: 16,
-                          color: AppTheme.primaryGreen,
-                        ),
-                        const SizedBox(width: 4),
                         Text(
-                          '\$${entry.moneyEarned.toStringAsFixed(2)}',
+                          '\Rs ${entry.moneyEarned.toStringAsFixed(0)}',
                           style: AppTheme.bodyMedium.copyWith(
                             color: AppTheme.primaryGreen,
                             fontWeight: FontWeight.bold,
