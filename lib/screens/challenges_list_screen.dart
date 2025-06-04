@@ -240,7 +240,7 @@ class _ChallengeCard extends ConsumerWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${challenge.totalVideos} videos • ₹${challenge.rewardAmount.toStringAsFixed(0)} reward',
+                        '${challenge.totalVideos} videos • Rs ${challenge.rewardAmount.toStringAsFixed(0)} reward',
                         style: const TextStyle(
                           color: AppTheme.textLight,
                         ),

@@ -189,7 +189,7 @@ class _VideosListScreenState extends ConsumerState<VideosListScreen> with Single
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Reward: ₹${challenge.rewardAmount} per video',
+                  'Reward: Rs ${challenge.rewardAmount} per video',
                   style: AppTheme.bodyLarge.copyWith(
                     color: AppTheme.primaryGreen,
                     fontWeight: FontWeight.bold,
@@ -246,7 +246,7 @@ class _VideosListScreenState extends ConsumerState<VideosListScreen> with Single
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '₹${userChallenge.earnedAmount} earned',
+                                'Rs ${userChallenge.earnedAmount} earned',
                                 style: AppTheme.bodyMedium.copyWith(
                                   color: AppTheme.primaryGreen,
                                 ),
@@ -457,7 +457,7 @@ class _VideosListScreenState extends ConsumerState<VideosListScreen> with Single
                                               ),
                                               const SizedBox(width: 4),
                                               Text(
-                                                '₹${challenge.rewardAmount}',
+                                                'Rs ${challenge.rewardAmount}',
                                                 style: AppTheme.bodySmall.copyWith(
                                                   color: AppTheme.primaryGreen,
                                                   fontWeight: FontWeight.bold,
@@ -547,7 +547,7 @@ class _VideosListScreenState extends ConsumerState<VideosListScreen> with Single
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              '₹${challenge.rewardAmount} added to your balance',
+                              'Rs ${challenge.rewardAmount} added to your balance',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
