@@ -220,7 +220,7 @@ class _ChallengeDetailsScreenState extends ConsumerState<ChallengeDetailsScreen>
                             const SizedBox(width: 24),
                             _buildStatItem(
                               icon: Icons.monetization_on,
-                              value: '₹${challenge.rewardAmount}',
+                              value: 'Rs ${challenge.rewardAmount}',
                               label: 'Per Video',
                             ),
                             const SizedBox(width: 24),
@@ -531,7 +531,7 @@ class _ChallengeDetailsScreenState extends ConsumerState<ChallengeDetailsScreen>
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '₹${amount.toStringAsFixed(0)}',
+                  'Rs ${amount.toStringAsFixed(0)}',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../models/leaderboard.dart';
 import '../providers/leaderboard_provider.dart';
 import '../theme/app_theme.dart';
 import 'package:countup/countup.dart';
 
-class LeaderboardScreen extends ConsumerWidget {
+class LeaderboardScreen extends ConsumerStatefulWidget {
   final String challengeId;
 
   const LeaderboardScreen({
@@ -15,9 +14,13 @@ class LeaderboardScreen extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final leaderboardAsync = ref.watch(leaderboardProvider(challengeId));
+  ConsumerState<LeaderboardScreen> createState() => _LeaderboardScreenState();
+}
 
+class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
+  @override
+  Widget build(BuildContext context) {
+    final leaderboardAsync = ref.watch(leaderboardProvider(widget.challengeId));
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -29,14 +32,6 @@ class LeaderboardScreen extends ConsumerWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.share, color: Colors.white),
-            onPressed: () {
-              // TODO: Implement share functionality
-            },
-          ),
-        ],
       ),
       body: leaderboardAsync.when(
         data: (leaderboard) => _buildLeaderboard(context, leaderboard),
@@ -85,6 +80,7 @@ class LeaderboardScreen extends ConsumerWidget {
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
                   final entry = leaderboard.entries[index];
+                  print(entry.toJson());
                   return _buildLeaderboardEntry(
                     context,
                     entry,
@@ -181,7 +177,7 @@ class LeaderboardScreen extends ConsumerWidget {
                 _buildStat(
                   'Earned',
                   '\$${entry.moneyEarned.toStringAsFixed(2)}',
-                  Icons.attach_money,
+                  Icons.money,
                 ),
                 _buildStat(
                   'Streak',
@@ -275,12 +271,12 @@ class LeaderboardScreen extends ConsumerWidget {
                       ),
                     ),
                   const SizedBox(width: 8),
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.white,
-                    backgroundImage: entry.userPhotoUrl != null ? NetworkImage(entry.userPhotoUrl!) : null,
-                    child: entry.userPhotoUrl == null ? Text(entry.userName[0].toUpperCase()) : null,
-                  ),
+                  // CircleAvatar(
+                  //   radius: 20,
+                  //   backgroundColor: Colors.white,
+                  //   backgroundImage: entry.userPhotoUrl != null ? NetworkImage(entry.userPhotoUrl!) : null,
+                  //   child: entry.userPhotoUrl == null ? Text(entry.userName[0].toUpperCase()) : null,
+                  // ),
                 ],
               ),
               const SizedBox(width: 12),
@@ -299,7 +295,7 @@ class LeaderboardScreen extends ConsumerWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.play_circle,
                           size: 16,
                           color: AppTheme.primaryGreen,

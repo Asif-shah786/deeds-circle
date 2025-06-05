@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/leaderboard.dart';
 import '../models/user_challenge.dart';
+import '../models/app_user.dart';
 
 class LeaderboardRepository {
   final FirebaseFirestore _firestore;
@@ -13,24 +14,28 @@ class LeaderboardRepository {
         .where('challengeId', isEqualTo: challengeId)
         .orderBy('completedVideoIds', descending: true)
         .snapshots()
-        .map((snapshot) {
+        .asyncMap((snapshot) async {
       final entries = <LeaderboardEntry>[];
       LeaderboardEntry? currentUserEntry;
       var rank = 1;
 
       for (var doc in snapshot.docs) {
-        final data = doc.data();
-        final userId = doc.id;
+        final userChallenge = UserChallenge.fromFirestore(doc);
+
+        // Fetch user data from users collection using AppUser model
+        final userDoc = await _firestore.collection('users').doc(userChallenge.userId).get();
+        final appUser = userDoc.exists ? AppUser.fromFirestore(userDoc) : null;
+
         final entry = LeaderboardEntry.fromFirestore(
           {
-            'userName': data['userName'] ?? 'Anonymous',
-            'userPhotoUrl': data['userPhotoUrl'],
+            'userName': appUser?.displayName ?? 'Anonymous',
+            'userPhotoUrl': appUser?.photoUrl,
             'rank': rank,
-            'videosCompleted': (data['completedVideoIds'] as List<dynamic>).length,
-            'moneyEarned': data['earnedAmount'] ?? 0.0,
-            'streakDays': data['streakDays'] ?? 0,
+            'videosCompleted': userChallenge.completedVideoIds.length,
+            'moneyEarned': userChallenge.earnedAmount,
+            'streakDays': userChallenge.streakDays,
           },
-          userId,
+          userChallenge.userId,
           currentUserId,
         );
 

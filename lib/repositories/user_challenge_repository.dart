@@ -110,7 +110,7 @@ class UserChallengeRepository {
         'title': videoTitle,
       };
 
-      // Update all fields
+      // Update all fields in user_challenges collection
       await docRef.update({
         'completedVideoIds': newCompletedVideos,
         'earnedAmount': newEarnedAmount,
@@ -120,6 +120,15 @@ class UserChallengeRepository {
         'status': isCompleted ? 'completed' : 'active',
         'completedAt': isCompleted ? Timestamp.now() : null,
       });
+
+      // Update user's totalEarnings in users collection
+      final userDoc = await _firestore.collection('users').doc(userChallenge.userId).get();
+      if (userDoc.exists) {
+        final currentTotalEarnings = (userDoc.data()?['totalEarnings'] as num?)?.toDouble() ?? 0.0;
+        await _firestore.collection('users').doc(userChallenge.userId).update({
+          'totalEarnings': currentTotalEarnings + challenge.rewardAmount,
+        });
+      }
 
       // If challenge is completed, update challenge status
       if (isCompleted) {
